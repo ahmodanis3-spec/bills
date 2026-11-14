@@ -1,0 +1,20 @@
+{
+  "id": "/bills/",
+  "name": "দৈনিক বিল ক্যালেন্ডার",
+  "short_name": "বিল ক্যালেন্ডার",
+  "description": "দৈনিক বিল ও কাগজপত্র ক্যালেন্ডার অনুযায়ী সংরক্ষণ ও দেখার অ্যাপ",
+  "lang": "bn",
+  "dir": "ltr",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f2f6fc",
+  "theme_color": "#1f6feb",
+  "categories": ["business", "productivity"],
+  "icons": [
+    {"src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any"},
+    {"src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any"},
+    {"src": "icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}
+  ]
+}
