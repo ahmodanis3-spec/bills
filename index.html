@@ -247,7 +247,7 @@ async function setAdmin(s){
  const role=await roleOf(s&&s.user,s&&s.access_token);
  isAdmin=role==="admin";isEditor=role==="editor";
  $("authBtn").textContent=role?"🚪 লগআউট":"🔒 লগইন";
- $("role").textContent=isAdmin?"🛡 অ্যাডমিন — সব অনুমতি আছে":isEditor?"👥 সহকারী — শুধু আপলোড":"👁 দেখার মোড";
+ $("role").textContent=isAdmin?"🛡 অ্যাডমিন — সব অনুমতি আছে":isEditor?"👥 সহকারী — আপলোড ও অ্যাপ্রুভ":"👁 দেখার মোড";
  $("themeBtn").style.display=isAdmin?"":"none";
  $("edBtn").style.display=isAdmin?"":"none";
  $("pwBtn").style.display=isEditor?"":"none";
@@ -383,8 +383,8 @@ function apEntry(x){
  let h=`<div class="ent"><div class="top">${sp}${bp}</div>`+kv("ভাউচার:",e.voucher)+kv("Odoo Transfer ID:",e.odoo_id)+kv("Received:",e.received)+`<div class="kv"><span>Approved:</span><b>${e.approved_by?esc(e.approved_by):"—"}</b>${x.ok&&e.approved_at?`<span>${fmtDT(e.approved_at)}</span>`:""}</div>`+kv("হেডিং:",e.heading);
  if(b&&b.length)h+='<div class="bl">'+b.map(f=>`<a href="${esc(urlOf(f.path))}" target="_blank" rel="noopener">📎 ${esc(f.name)} <small>(${esc((CATS.find(c=>c.id===f.cat)||{n:""}).n)} · ${esc(f.date)})</small></a>`).join("")+'</div>';
  if((e.files||[]).length)h+='<div class="ph">'+e.files.map(f=>/^image\//.test(f.type||"")?`<a href="${esc(urlOf(f.path))}" target="_blank" rel="noopener"><img src="${esc(urlOf(f.path))}" loading="lazy" alt=""></a>`:`<a class="f" href="${esc(urlOf(f.path))}" target="_blank" rel="noopener">📎 ${esc(f.name||"ফাইল")}</a>`).join("")+'</div>';
+  if((isAdmin||isEditor)&&!x.ok)h+=`<div class="arow"><select id="as${e.id}">${opts(APPROVERS,"","অ্যাপ্রুভকারী বাছাই করুন")}</select><button type="button" class="sm" data-act="appr" data-id="${e.id}">✅ অ্যাপ্রুভ</button></div>`;
   if(canEdit){
-  if(!x.ok)h+=`<div class="arow"><select id="as${e.id}">${opts(APPROVERS,"","অ্যাপ্রুভকারী বাছাই করুন")}</select><button type="button" class="sm" data-act="appr" data-id="${e.id}">✅ অ্যাপ্রুভ</button></div>`;
   h+=`<div class="arow">${x.ok?`<button type="button" class="sm" data-act="unappr" data-id="${e.id}">↩ অ্যাপ্রুভ বাতিল</button>`:""}<button type="button" class="sm" data-act="edit" data-id="${e.id}">✏️ সম্পাদনা</button><button type="button" class="sm del" data-act="del" data-id="${e.id}">মুছুন</button></div>`;
  }
  return h+"</div>";
@@ -411,7 +411,7 @@ async function shrink(file){
 }
 function apFormHtml(e){
  const v=e||{},c=CATS.find(x=>x.id===(apForm&&apForm.cat))||{n:"ক্যাটাগরি ছাড়া"};
- return `<div class="ef"><div class="mu">📂 ${esc(c.n)}</div><label>ভাউচার (খালি রাখলে অটো সিরিয়াল)<input id="fv" value="${esc(v.id?(v.voucher||""):apPfx(apForm.date).v)}" placeholder="${v.id?"":"অটো: "+esc(apNextVoucher(apForm.cat,apForm.date))}" autocomplete="off"></label><label>Odoo Transfer ID<input id="fo" value="${esc(v.id?(v.odoo_id||""):apPfx(apForm.date).o)}" autocomplete="off"></label><label>Received (কে নিয়েছে)<select id="fr">${opts(RECEIVED,v.received||"","— বাছাই করুন —")}</select></label>${isAdmin?`<label>Approved (কে অ্যাপ্রুভ করেছেন)<select id="fa">${opts(APPROVERS,v.approved_by||"","— বাছাই করুন —")}</select></label>`:""}<label>হেডিং<select id="fh">${opts(HEADINGS,v.heading||"","— বাছাই করুন —")}</select></label><label>📷 ছবি / প্রুফ (একাধিক দেওয়া যাবে)<input id="ff" type="file" accept="image/*,application/pdf" multiple></label>${(v.files||[]).length?`<div class="mu">আগে আপলোড করা ${bn(v.files.length)}টি ছবি থাকবে, নতুনগুলো যোগ হবে।</div>`:""}<div style="display:flex;gap:8px"><button type="button" class="uploadbtn" style="margin:0" data-act="save">সংরক্ষণ</button><button type="button" data-act="cancel">বাতিল</button></div><div class="mu" id="apm"></div></div>`;
+ return `<div class="ef"><div class="mu">📂 ${esc(c.n)}</div><label>ভাউচার (খালি রাখলে অটো সিরিয়াল)<input id="fv" value="${esc(v.id?(v.voucher||""):apPfx(apForm.date).v)}" placeholder="${v.id?"":"অটো: "+esc(apNextVoucher(apForm.cat,apForm.date))}" autocomplete="off"></label><label>Odoo Transfer ID<input id="fo" value="${esc(v.id?(v.odoo_id||""):apPfx(apForm.date).o)}" autocomplete="off"></label><label>Received (কে নিয়েছে)<select id="fr">${opts(RECEIVED,v.received||"","— বাছাই করুন —")}</select></label>${(isAdmin||isEditor)?`<label>Approved (কে অ্যাপ্রুভ করেছেন)<select id="fa">${opts(APPROVERS,v.approved_by||"","— বাছাই করুন —")}</select></label>`:""}<label>হেডিং<select id="fh">${opts(HEADINGS,v.heading||"","— বাছাই করুন —")}</select></label><label>📷 ছবি / প্রুফ (একাধিক দেওয়া যাবে)<input id="ff" type="file" accept="image/*,application/pdf" multiple></label>${(v.files||[]).length?`<div class="mu">আগে আপলোড করা ${bn(v.files.length)}টি ছবি থাকবে, নতুনগুলো যোগ হবে।</div>`:""}<div style="display:flex;gap:8px"><button type="button" class="uploadbtn" style="margin:0" data-act="save">সংরক্ষণ</button><button type="button" data-act="cancel">বাতিল</button></div><div class="mu" id="apm"></div></div>`;
 }
 function apRender(){
  const box=$("apView"),canAdd=isAdmin||isEditor;
@@ -510,7 +510,7 @@ $("apView").addEventListener("click",async ev=>{
     apForm=null;await apShow(true);toast("এন্ট্রি যোগ হয়েছে ✔");
    }
   else if(act==="appr"){
-   if(!isAdmin)return;
+   if(!isAdmin&&!isEditor)return;
    const nm=$("as"+id).value;if(!nm){toast("আগে অ্যাপ্রুভকারী বাছাই করুন");return;}
    const b=billsFor(apCache.find(e=>e.id===id)||{});
    if(b===null&&!confirm("কোনো ভাউচার/Odoo কোড দেওয়া নেই। তবুও অ্যাপ্রুভ করবেন?"))return;
